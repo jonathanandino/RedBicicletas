@@ -1,0 +1,32 @@
+extends ../layout 
+
+block content 
+
+    a.btn.btn-primary.btn-sm(type='button' href='/bicicletas/create') Small button
+    table.table  
+        thead 
+            tr 
+                th(scope='col') #
+                th(scope='col') Color
+                th(scope='col') Modelo 
+                th(scope='col') Ubicacion
+                th(scope='col')
+
+
+
+        tbody 
+            each bici in bicis 
+                tr 
+                    td(scope='row')
+                        =bici.id
+                        td=bici.color 
+                        td=bici.model 
+                        td=bici.ubicacion
+                        td
+                            a(href='bicicletas/'+ bici.id+ '/update') Editar
+                            form.inline(method='post', action='bicicletas/' + bici.id + '/delete')
+                                input(type='hidden', name='id', value= bici.id)
+                        td
+                            button.btn.btn-outline-secondary(type='submit', name='submit_param', value='suvm it_value')
+                                = 'Eliminar'
+                        
