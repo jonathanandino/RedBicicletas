@@ -44,7 +44,7 @@ describe('Testing Usuarios', function(){
             tomorrow.setDate(hoy.getVarDate()+ 1);
             usuario.reservar(bicicleta.id, hoy, tomorrow, function(err,reserva){
                 Reserva.find({}).populate('bicicleta').populate('usuario').exec(function() {
-                    console.log(reservas[0]);
+                    console.log(reserva[0]);
                     expect(reservas.length).toBe(1);
                     expect(reservas[0].diaDeReserva()).toBe(2);
                     expect(reservas[0].bicicleta.code).toBe(1);

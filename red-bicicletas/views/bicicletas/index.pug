@@ -15,17 +15,17 @@ block content
 
 
         tbody 
-            each bici in bicis 
+            each bici in bicis
                 tr 
                     td(scope='row')
-                        =bici.id
-                        td=bici.color 
-                        td=bici.model 
-                        td=bici.ubicacion
+                        =bici.body.id
+                        td=bici.body.color 
+                        td=bici.body.model 
+                        td=bici.body.ubicacion[0] + ', ' + bici.body.ubicacion[1]
                         td
-                            a(href='bicicletas/'+ bici.id+ '/update') Editar
-                            form.inline(method='post', action='bicicletas/' + bici.id + '/delete')
-                                input(type='hidden', name='id', value= bici.id)
+                            a(href='bicicletas/'+ bici.body.id+ '/update') Editar
+                            form.inline(method='post', action='bicicletas/' + bici.body.id + '/delete')
+                                input(type='hidden', name='id', value= bici.body.id)
                         td
                             button.btn.btn-outline-secondary(type='submit', name='submit_param', value='suvm it_value')
                                 = 'Eliminar'
