@@ -1,3 +1,4 @@
+require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -5,7 +6,6 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const passport = require('./config/passport');
 const session = require('express-session');
-const mongoose = require('mongoose');
 const jwt =require('jsonwebtoken');
 
 const Usuario = require('./models/usuario');
@@ -34,13 +34,22 @@ app.use(session({
 }))
 
 
-var mongose = require('mongoose');
 const { validate } = require('./models/bicicleta');
-var mongoDB = 'mongodb://localhost/red_bicicletas';
-mongoose.connect(mongoDB, { useNewUrlParser: true });
-var db = mongose.connection;
-db.on('error', console.error.bind(console, ' Mongoose connection error'));
 
+
+
+//var mongoDB = 'mongodb://localhost/red_bicicletas';
+
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = process.env.MONGO_URI;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+client.connect(err => {
+  const collection = client.db("test").collection("devices");
+   
+  // perform actions on the collection object
+  client.close();
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -92,7 +101,7 @@ app.post('/forgotPassword', function(req, res) {
   });
 });
 
-app.get('/resetPassword/:token', function(red, res, next){
+app.get('/resetPassword/:token', function(req, res, next){
   Token.findOne({ token: req.params.token }, function (err, token) {
     if (!token) return res.status(400).send({ type: 'not-verified', msg: 'No existe un usuario asociado al token. Verifique que su token no haya expirado.'});
 
