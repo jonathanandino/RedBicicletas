@@ -8,6 +8,7 @@ const Token = require('../models/token');
 
 const crypto = require('crypto');
 const mailer = require('../mailer/mailer');
+const { strict } = require('assert');
 
 const saltRounds = 10
 
@@ -41,7 +42,10 @@ var usuarioSchema = new Schema({
     verificado: {
         type: Boolean,
         default: false
-    } 
+    },
+    googleId: String,
+    facebookId: String
+
 });
 
 usuarioSchema.plugin(uniqueValidator, {message: 'El {PATH} ya existe con otro usuario'})
@@ -104,6 +108,73 @@ usuarioSchema.methods.resetPassuord = function(cb) {
         cb(nul1);
     });
 }
+
+//Method of AuthO Note contidition is the user
+usuarioSchema.statics.findOneOrCreateByGoogle = function findOneOrCreate(condition,cb) {
+    const self = this;//is use to don't loose the ref to the user in the other callback
+  console.log("user",condition);
+  
+    self.findOne( {
+        $or: [{ "googleId": condition.id }, { "email": condition.emails[0].value }],
+      }, (err, result) => {
+        if (result) {// if user exist 
+          cb(err, result);//execute the callback with the user
+        } else { //success
+                console.log("---------------------------CONDITION ---------------------");
+                console.log(condition);
+                let values = {};
+                values.id = condition.id;
+                values.email = condition.emails[0].value;
+                values.nombre = condition.displayName || "Sin nombre";
+                values.verificado = true;
+                values.password = condition._json.etag;// improve this 
+                console.log("--------------VALUES---------------");
+          //we create the user
+          self.create(values, (err, result) => {
+            if (err) {
+              console.log(err);
+            }
+            return cb(err, result);
+          });
+        }
+      }
+    );
+  }
+
+  usuarioSchema.statics.findOneOrCreateByFacebook = function findOneOrCreate(condition,cb) {
+    const self = this;//is use to don't loose the ref to the user in the other callback
+  console.log("user",condition);
+  
+    self.findOne( {
+        $or: [{ "facebookId": condition.id }, { "email": condition.emails[0].value }],
+      }, (err, result) => {
+        if (result) {// if user exist 
+          cb(err, result);//execute the callback with the user
+        } else { //success
+                console.log("---------------------------CONDITION ---------------------");
+                console.log(condition);
+                let values = {};
+                values.facebookId = condition.id;
+                values.email = condition.emails[0].value;
+                values.nombre = condition.displayName || "Sin nombre";
+                values.verificado = true;
+                values.password = condition._json.etag;// improve this 
+                console.log("--------------VALUES---------------");
+          //we create the user
+          self.create(values, (err, result) => {
+            if (err) {
+              console.log(err);
+            }
+            return cb(err, result);
+          });
+        }
+      }
+    );
+  }
+
+
+
+  
 
 
 module.exports = mongoose.model('Usuario', usuarioSchema);

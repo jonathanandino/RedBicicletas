@@ -6,8 +6,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const passport = require('./config/passport');
 const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 const jwt =require('jsonwebtoken');
-
+const newrelic =  require('newrelic')
 const Usuario = require('./models/usuario');
 const Token = require('./models/token');
 
@@ -18,8 +19,23 @@ var bicicletasRouter = require('./routes/bicicletas');
 var bicicletasAPIRouter = require('./routes/api/bicicletas');
 var usuarioAPIRouter = require('./routes/api/usuarios');
 var authAPIRouter = require('./routes/api/auth');
+const assert = require('assert')
 
-const store = new session.MemoryStore;
+//const store = new session.MemoryStore;
+let store;
+
+if (process.env.NODE_ENV== 'develpment') {
+  store = new session.MemoryStore;
+} else {
+  store = new MongoDBStore({
+    uri: process.env.MONGO_URI,
+    collection: 'sessions'
+  });
+  store.on('error', function(error) {
+  assert.ifError(error);
+  assert.ok(false);
+  });
+}
 
 var app = express();
 
@@ -35,10 +51,6 @@ app.use(session({
 
 
 const { validate } = require('./models/bicicleta');
-
-
-
-//var mongoDB = 'mongodb://localhost/red_bicicletas';
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = process.env.MONGO_URI;
@@ -179,5 +191,19 @@ function validarUsuario(req, res, next){
     }
   });
 }
+
+
+app.get('/auth/google',
+  passport.authenticate('google', { scope:
+      [ 'https://www.googleapis.com/auth/plus.login',
+        'https://www.googleapis.com/auth/plus.profile.emails.read' ] }
+));
+
+app.get( '/auth/google/callback',
+    passport.authenticate( 'google', {
+        successRedirect: '/',
+        failureRedirect: '/auth/google/failure'
+}));
+
 
 module.exports = app;
